@@ -70,13 +70,14 @@ This ensures optimal and unbiased decision-making.
 - Multi-city scalability
 
 🤖 AI Integration (Conceptual)
+
 ReliefSync simulates AI-driven decision-making using rule-based logic.
 It can be extended with:
 - Google Gemini API
 - Vertex AI for predictive insights
 - Real-time intelligent recommendations
 
-🙌 Team
+🙌 Team :
 VibeCodersX
 
 ⭐ If you like this project, feel free to star the repository!
