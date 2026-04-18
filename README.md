@@ -1,10 +1,12 @@
 🚑 ReliefSync – Smart Disaster Response Dashboard
 
 📌 Overview
+
 ReliefSync is a smart disaster response coordination platform designed to improve emergency management by transforming scattered community data into actionable insights.
 It enables authorities and NGOs to identify critical zones, match volunteers efficiently, and make faster, data-driven decisions during emergencies.
 
 🚨 Problem Statement
+
 In disaster scenarios, critical data is often scattered across multiple sources, making it difficult to:
 - Identify high-priority areas quickly
 - Allocate volunteers efficiently
@@ -12,6 +14,7 @@ In disaster scenarios, critical data is often scattered across multiple sources,
 This leads to delayed responses, poor coordination, and unmet urgent needs.
 
 💡 Solution
+
 ReliefSync provides a centralized dashboard that:
 - Visualizes urgency using a Crisis Heatmap
 - Matches volunteers using a weighted scoring system
@@ -19,6 +22,7 @@ ReliefSync provides a centralized dashboard that:
 - Enables quick and transparent decision-making
 
 ⚙️ How It Works
+
 1. Relief requests are generated with location and urgency
 2. System analyzes and visualizes data using a heatmap
 3. Volunteers are ranked using a scoring algorithm
@@ -27,6 +31,7 @@ ReliefSync provides a centralized dashboard that:
 6. Dashboard updates in real time
 
 🔢 Matching Algorithm
+
 Volunteer selection is based on:
 - Skill Match → 45%
 - Availability → 25%
@@ -35,6 +40,7 @@ Volunteer selection is based on:
 This ensures optimal and unbiased decision-making.
 
 ✨ Features
+
 - 📊 Real-time dashboard with key metrics
 - 🗺️ Crisis Heatmap for urgency visualization
 - 🤖 Intelligent volunteer matching system
@@ -45,6 +51,7 @@ This ensures optimal and unbiased decision-making.
 - 🔄 Simulated emergency alerts
 
 🛠️ Tech Stack
+
 - Frontend: HTML, CSS, JavaScript
 - Map Visualization: Leaflet.js
 - Logic: Frontend-based scoring system
