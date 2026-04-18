@@ -69,7 +69,7 @@ This ensures optimal and unbiased decision-making.
 - Government & NGO system integration
 - Multi-city scalability
 
-🤖 AI Integration (Conceptual)
+🤖 AI Integration (Future Integration)
 
 ReliefSync simulates AI-driven decision-making using rule-based logic.
 It can be extended with:
