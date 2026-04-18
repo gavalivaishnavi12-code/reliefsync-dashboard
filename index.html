@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disaster Response Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@500,700,800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    :root,
+    [data-theme="light"] {
+      --text-xs: clamp(0.7rem, 0.65rem + 0.2vw, 0.8rem);
+      --text-sm: clamp(0.8rem, 0.75rem + 0.3vw, 0.9rem);
+      --text-base: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+      --text-lg: clamp(1.05rem, 0.95rem + 0.5vw, 1.25rem);
+      --text-xl: clamp(1.25rem, 1.1rem + 1vw, 1.75rem);
+      --space-1: 0.15rem;
+      --space-2: 0.35rem;
+      --space-3: 0.5rem;
+      --space-4: 0.85rem;
+      --space-5: 1rem;
+      --space-6: 1.25rem;
+      --space-8: 1.5rem;
+      --space-10: 2rem;
+      --space-12: 2.5rem;
+      --space-16: 3rem;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-surface-2: #f1f5f9;
+      --color-surface-offset: #e2e8f0;
+      --color-border: #cbd5e1;
+      --color-divider: #e2e8f0;
+      --color-text: #0f172a;
+      --color-text-muted: #475569;
+      --color-text-faint: #94a3b8;
+      --color-text-inverse: #f8fafc;
+      --color-primary: #0ea5e9;
+      --color-primary-hover: #0284c7;
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-error: #ef4444;
+      --color-blue: #3b82f6;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.25rem;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+      --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-surface-2: #334155;
+      --color-surface-offset: #0f172a;
+      --color-border: #475569;
+      --color-divider: #334155;
+      --color-text: #f8fafc;
+      --color-text-muted: #94a3b8;
+      --color-text-faint: #64748b;
+      --color-text-inverse: #020617;
+      --color-primary: #38bdf8;
+      --color-primary-hover: #7dd3fc;
+      --color-success: #34d399;
+      --color-warning: #fbbf24;
+      --color-error: #f87171;
+      --color-blue: #60a5fa;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--color-surface), var(--color-surface-2));
+      border-right: 1px solid var(--color-border);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .brand svg {
+      width: 42px;
+      height: 42px;
+      color: var(--color-primary);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font: 800 var(--text-lg)/1.1 var(--font-display);
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .theme-toggle,
+    .primary-btn,
+    .secondary-btn,
+    .ghost-btn,
+    .chip,
+    .assign-btn {
+      border: 1px solid transparent;
+      transition: all var(--transition);
+    }
+
+    .theme-toggle,
+    .secondary-btn,
+    .ghost-btn {
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+
+    .theme-toggle:hover,
+    .secondary-btn:hover,
+    .ghost-btn:hover {
+      background: var(--color-surface-2);
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      display: grid;
+      place-items: center;
+    }
+
+    .sidebar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-group {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      border: 1px solid transparent;
+      transition: all var(--transition);
+    }
+
+    .nav-link.active,
+    .nav-link:hover {
+      color: var(--color-text);
+      background: color-mix(in oklab, var(--color-primary) 10%, var(--color-surface));
+      border-color: color-mix(in oklab, var(--color-primary) 28%, var(--color-border));
+      transform: translateX(4px);
+    }
+
+    .sidebar-card {
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-card h3 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--text-base);
+    }
+
+    .sidebar-card p {
+      margin: 0 0 var(--space-4);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .sidebar-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .primary-btn {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border-radius: var(--radius-full);
+      padding: 0.7rem 1rem;
+      font-weight: 700;
+      box-shadow: 0 4px 14px 0 rgba(56, 189, 248, 0.2);
+    }
+
+    .primary-btn:hover,
+    .assign-btn:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .secondary-btn,
+    .ghost-btn {
+      border-radius: var(--radius-full);
+      padding: 0.75rem 1rem;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      background: color-mix(in oklab, var(--color-bg) 88%, transparent);
+      backdrop-filter: blur(14px);
+      z-index: 1000;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font: 800 var(--text-xl)/1.05 var(--font-display);
+    }
+
+    .topbar p {
+      margin: var(--space-2) 0 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+
+    .search-box {
+      min-width: 240px;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus {
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 30%, transparent);
+    }
+
+    .content {
+      padding: var(--space-5);
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    /* AI Insights Panel */
+    .ai-panel {
+      background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 10%, var(--color-surface)), color-mix(in oklab, #8b5cf6 10%, var(--color-surface)));
+      border: 1px solid color-mix(in oklab, var(--color-primary) 30%, var(--color-border));
+      padding: var(--space-4);
+      border-radius: var(--radius-xl);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      box-shadow: var(--shadow-sm);
+      animation: slideInDown 0.5s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--color-primary), #8b5cf6);
+    }
+
+    .ai-panel-icon {
+      background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+      color: #fff;
+      padding: 0.6rem;
+      border-radius: var(--radius-md);
+      display: flex;
+      box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .ai-panel-content {
+      flex: 1;
+    }
+
+    .ai-panel-content h4 {
+      margin: 0 0 var(--space-2);
+      font-size: var(--text-base);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text);
+    }
+
+    .ai-panel-content h4 span {
+      font-size: var(--text-xs);
+      background: color-mix(in oklab, var(--color-primary) 20%, transparent);
+      color: var(--color-primary);
+      padding: 0.1rem 0.4rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid color-mix(in oklab, var(--color-primary) 30%, transparent);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .ai-panel-content p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: color-mix(in oklab, var(--color-primary) 50%, var(--color-border));
+    }
+
+    .kpi-card {
+      padding: var(--space-4);
+    }
+
+    .eyebrow {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-faint);
+      font-weight: 700;
+    }
+
+    .kpi-value {
+      margin-top: var(--space-2);
+      font: 800 clamp(1.4rem, 1.2rem + 1.2vw, 2rem)/1 var(--font-display);
+    }
+
+    .kpi-meta {
+      margin-top: var(--space-2);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .success {
+      color: var(--color-success);
+    }
+
+    .warning {
+      color: var(--color-warning);
+    }
+
+    .danger {
+      color: var(--color-error);
+    }
+
+    .info {
+      color: var(--color-blue);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: var(--space-5);
+      align-items: start;
+    }
+
+    .panel-header {
+      padding: var(--space-4) var(--space-4) 0;
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      font-size: var(--text-lg);
+    }
+
+    .panel-header p {
+      margin: var(--space-1) 0 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    #map {
+      height: 420px;
+      margin: var(--space-4);
+      border-radius: calc(var(--radius-xl) - var(--space-2));
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      z-index: 1;
+    }
+
+    .legend {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      padding: 0 var(--space-4) var(--space-4);
+    }
+
+    .chip {
+      border-radius: var(--radius-full);
+      padding: 0.45rem 0.8rem;
+      font-size: var(--text-xs);
+      font-weight: 700;
+    }
+
+    .chip.low {
+      background: color-mix(in oklab, var(--color-blue) 16%, var(--color-surface));
+      color: var(--color-blue);
+      border-color: color-mix(in oklab, var(--color-blue) 30%, var(--color-border));
+    }
+
+    .chip.medium {
+      background: color-mix(in oklab, var(--color-warning) 16%, var(--color-surface));
+      color: var(--color-warning);
+      border-color: color-mix(in oklab, var(--color-warning) 26%, var(--color-border));
+    }
+
+    .chip.high {
+      background: color-mix(in oklab, var(--color-error) 16%, var(--color-surface));
+      color: var(--color-error);
+      border-color: color-mix(in oklab, var(--color-error) 26%, var(--color-border));
+    }
+
+    .stack {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .request-list,
+    .match-list {
+      padding: 0 var(--space-4) var(--space-4);
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .request-item,
+    .match-item {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeIn 0.4s ease-out backwards;
+    }
+
+    .request-item:hover,
+    .match-item:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: var(--shadow-md);
+      border-color: color-mix(in oklab, var(--color-primary) 40%, var(--color-border));
+    }
+
+    .request-item.active {
+      background: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface));
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1px var(--color-primary);
+    }
+
+    .request-top,
+    .match-top {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .request-title,
+    .match-name {
+      margin: 0;
+      font-size: var(--text-base);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* AI Badge & Explanations */
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: linear-gradient(90deg, #ec4899, #8b5cf6);
+      color: #fff;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-full);
+      margin-left: var(--space-2);
+      animation: pulseGlow 2s infinite;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+    }
+
+    .ai-badge svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .ai-explanation {
+      margin-top: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      background: color-mix(in oklab, var(--color-primary) 5%, var(--color-surface-offset));
+      border: 1px solid color-mix(in oklab, var(--color-primary) 15%, var(--color-border));
+      border-left: 3px solid #8b5cf6;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+      transition: all 0.3s ease;
+    }
+
+    .ai-explanation:hover {
+      background: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface-offset));
+    }
+
+    .ai-explanation svg {
+      width: 16px;
+      height: 16px;
+      color: #8b5cf6;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .muted {
+      color: var(--color-text-muted);
+    }
+
+    .tiny {
+      font-size: var(--text-xs);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    .pill {
+      padding: 0.35rem 0.7rem;
+      border-radius: var(--radius-full);
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      font-size: var(--text-xs);
+    }
+
+    .request-actions,
+    .match-metrics {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-top: var(--space-4);
+    }
+
+    .score-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--color-surface-offset);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: var(--space-4);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+      border-radius: inherit;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .assign-btn {
+      border: none;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border-radius: var(--radius-full);
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(56, 189, 248, 0.2);
+      transition: all 0.2s ease;
+      font-size: var(--text-sm);
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0 var(--space-4) var(--space-4);
+    }
+
+    .filter-row select {
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: 0.6rem 0.9rem;
+      min-width: 130px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: var(--text-sm);
+    }
+
+    .filter-row select:hover {
+      border-color: var(--color-primary);
+    }
+
+    .footer-note {
+      padding: 0 var(--space-4) var(--space-4);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: var(--color-surface);
+      color: var(--color-text);
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--radius-lg);
+    }
+
+    .leaflet-container a {
+      color: var(--color-primary);
+    }
+
+    .leaflet-control-attribution {
+      font-size: 11px;
+    }
+
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(139, 92, 246, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .kpi-grid,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+
+      .topbar,
+      .content,
+      .sidebar {
+        padding-inline: var(--space-4);
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar-actions {
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        min-width: 0;
+        width: 100%;
+      }
+
+      #map {
+        height: 360px;
+        margin: var(--space-4);
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* NEW: Bottom grid and insights styling appended */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+      align-items: stretch;
+    }
+
+    .bottom-grid .card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .bottom-grid .request-list,
+    .bottom-grid .match-list {
+      flex: 1;
+      max-height: 480px;
+      overflow-y: auto;
+      align-content: start;
+    }
+
+    .bottom-grid .request-list::-webkit-scrollbar,
+    .bottom-grid .match-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .bottom-grid .request-list::-webkit-scrollbar-thumb,
+    .bottom-grid .match-list::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 4px;
+    }
+
+    .insights-list {
+      margin: var(--space-2) 0 0;
+      padding-left: var(--space-4);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .insights-list li {
+      list-style-type: disc;
+    }
+
+    @media (max-width: 960px) {
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" aria-label="ReliefSync logo">
+            <path d="M32 6 10 18v14c0 13 8.5 22.5 22 26 13.5-3.5 22-13 22-26V18L32 6Z"></path>
+            <path d="M23 32h18M32 23v18"></path>
+          </svg>
+          <div>
+            <h1>ReliefSync</h1>
+            <p>Volunteer matching + live need heatmap</p>
+          </div>
+        </div>
+        <button class="theme-toggle" data-theme-toggle aria-label="Switch theme">☼</button>
+      </div>
+
+      <nav class="nav-group" aria-label="Primary">
+        <a class="nav-link active" href="#dashboard">Dashboard</a>
+        <a class="nav-link" href="#requests">Requests</a>
+        <a class="nav-link" href="#matching">Volunteer Matching</a>
+        <a class="nav-link" href="#analytics">Heatmap Analytics</a>
+      </nav>
+
+      <div class="sidebar-card">
+        <h3>How this demo works</h3>
+        <p>Select a relief request, view urgency on the heatmap, and instantly rank volunteers using weighted scoring
+          across skills, availability, and distance.</p>
+        <button class="primary-btn" id="focusCriticalBtn">Focus critical zone</button>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Scoring weights</h3>
+        <p>Skill match 45%, availability 25%, distance 20%, urgency bonus 10%.</p>
+      </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+      <header class="topbar">
+        <div>
+          <h2>Emergency Coordination Dashboard</h2>
+          <p>Track where help is needed first and assign the best-fit volunteers in one workflow.</p>
+        </div>
+        <div class="topbar-actions">
+          <input class="search-box" id="globalSearch" type="search" placeholder="Search requests, skills, locations"
+            aria-label="Search requests, skills, locations" />
+          <button class="ghost-btn" id="resetBtn">Reset</button>
+          <button class="primary-btn" id="simulateBtn">Simulate new alert</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <!-- AI Panel relocated -->
+        <section class="kpi-grid" aria-label="Overview metrics">
+          <article class="card kpi-card">
+            <div class="eyebrow">Open requests</div>
+            <div class="kpi-value" id="kpiRequests">08</div>
+            <div class="kpi-meta">Across Bengaluru response zones</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="eyebrow">Available volunteers</div>
+            <div class="kpi-value success" id="kpiVolunteers">24</div>
+            <div class="kpi-meta">Ready for dispatch now</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="eyebrow">Critical clusters</div>
+            <div class="kpi-value danger" id="kpiCritical">03</div>
+            <div class="kpi-meta">Need action in under 60 min</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="eyebrow">Assignments made</div>
+            <div class="kpi-value info" id="kpiAssigned">11</div>
+            <div class="kpi-meta">Updated after each confirmation</div>
+          </article>
+        </section>
+
+        <!-- Heatmap Full Width directly in flow -->
+        <article class="card" aria-labelledby="map-title">
+          <div class="panel-header">
+            <div>
+              <h3 id="map-title">Crisis Heatmap</h3>
+              <p>Weighted by urgency, people needed, and unresolved status.</p>
+            </div>
+            <button class="secondary-btn" id="toggleMarkersBtn">Toggle markers</button>
+          </div>
+          <div id="map" role="application" aria-label="Heatmap of incident needs"></div>
+          <div class="legend">
+            <span class="chip low">Low</span>
+            <span class="chip medium">Moderate</span>
+            <span class="chip high">Critical</span>
+          </div>
+        </article>
+
+        <!-- Static AI Insights Panel placed under Map -->
+        <section class="ai-panel" aria-label="AI Recommendations">
+          <div class="ai-panel-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+            </svg>
+          </div>
+          <div class="ai-panel-content">
+            <h4>AI Insights <span>STATIC AI</span></h4>
+            <ul class="insights-list">
+              <li>High urgency detected in <strong>Hebbal</strong> for medical camp support.</li>
+              <li>Recommended volunteers prioritized based on exact skill matches and proximity.</li>
+              <li>System running optimally with rapid 60-min response potential.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- New Bottom Grid layout for side-by-side components -->
+        <section class="bottom-grid">
+          <article class="card" id="requests">
+            <div class="panel-header">
+              <div>
+                <h3>Relief requests</h3>
+                <p>Click a request to rank volunteers and focus the map.</p>
+              </div>
+            </div>
+            <div class="filter-row">
+              <select id="skillFilter" aria-label="Filter by skill">
+                <option value="all">All skills</option>
+                <option value="medical">Medical</option>
+                <option value="logistics">Logistics</option>
+                <option value="teaching">Teaching</option>
+                <option value="rescue">Rescue</option>
+              </select>
+              <select id="urgencyFilter" aria-label="Filter by urgency">
+                <option value="all">All urgency</option>
+                <option value="5">Critical</option>
+                <option value="4">High</option>
+                <option value="3">Medium</option>
+              </select>
+            </div>
+            <div class="request-list" id="requestList"></div>
+          </article>
+
+          <article class="card" id="matching">
+            <div class="panel-header">
+              <div>
+                <h3>Best-fit volunteers</h3>
+                <p id="selectedRequestLabel">Select a request to view matches.</p>
+              </div>
+            </div>
+            <div class="match-list" id="matchList"></div>
+            <div class="footer-note">Weighted score = skills + availability + distance + urgency bonus. The breakdown is
+              shown for every volunteer.</div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script>
+    const appState = {
+      showMarkers: true,
+      selectedRequestId: null,
+      skillFilter: 'all',
+      urgencyFilter: 'all',
+      search: ''
+    };
+
+    const baseRequests = [
+      { id: 'REQ-101', title: 'Medical camp support', area: 'Hebbal', lat: 13.0352, lng: 77.5970, requiredSkills: ['medical', 'logistics'], urgency: 5, peopleNeeded: 8, timeSlot: 'morning', status: 'open', description: 'First-aid desk and medicine queue support.' },
+      { id: 'REQ-102', title: 'Supply distribution', area: 'KR Puram', lat: 13.0025, lng: 77.6953, requiredSkills: ['logistics'], urgency: 4, peopleNeeded: 10, timeSlot: 'afternoon', status: 'open', description: 'Pack and distribute food and hygiene kits.' },
+      { id: 'REQ-103', title: 'Child safe-space teaching', area: 'BTM Layout', lat: 12.9166, lng: 77.6101, requiredSkills: ['teaching'], urgency: 3, peopleNeeded: 4, timeSlot: 'afternoon', status: 'open', description: 'Run learning and engagement sessions.' },
+      { id: 'REQ-104', title: 'Evacuation support', area: 'Yelahanka', lat: 13.1005, lng: 77.5963, requiredSkills: ['rescue', 'logistics'], urgency: 5, peopleNeeded: 6, timeSlot: 'morning', status: 'open', description: 'Guide families to transport assembly points.' },
+      { id: 'REQ-105', title: 'Shelter registration desk', area: 'Jayanagar', lat: 12.9250, lng: 77.5938, requiredSkills: ['logistics', 'teaching'], urgency: 3, peopleNeeded: 3, timeSlot: 'evening', status: 'open', description: 'Register arrivals and coordinate family desks.' },
+      { id: 'REQ-106', title: 'Mobile health visit', area: 'Whitefield', lat: 12.9698, lng: 77.7499, requiredSkills: ['medical'], urgency: 4, peopleNeeded: 5, timeSlot: 'evening', status: 'open', description: 'Nursing and triage support for mobile van.' },
+      { id: 'REQ-107', title: 'Relief camp orientation', area: 'Electronic City', lat: 12.8399, lng: 77.6770, requiredSkills: ['teaching', 'logistics'], urgency: 2, peopleNeeded: 4, timeSlot: 'morning', status: 'open', description: 'Guide new arrivals and explain support flows.' },
+      { id: 'REQ-108', title: 'Medicine inventory audit', area: 'Rajajinagar', lat: 12.9915, lng: 77.5544, requiredSkills: ['medical', 'logistics'], urgency: 4, peopleNeeded: 3, timeSlot: 'afternoon', status: 'open', description: 'Verify stock, expiry, and issue records.' }
+    ];
+
+    const baseVolunteers = [
+      { id: 'VOL-01', name: 'Aarav N', skills: ['medical', 'logistics'], lat: 13.0200, lng: 77.6100, availability: ['morning', 'afternoon'], status: 'available' },
+      { id: 'VOL-02', name: 'Diya R', skills: ['teaching'], lat: 12.9230, lng: 77.6120, availability: ['afternoon', 'evening'], status: 'available' },
+      { id: 'VOL-03', name: 'Rohit M', skills: ['logistics', 'rescue'], lat: 13.0950, lng: 77.5900, availability: ['morning'], status: 'available' },
+      { id: 'VOL-04', name: 'Sana P', skills: ['medical'], lat: 12.9740, lng: 77.7500, availability: ['evening'], status: 'available' },
+      { id: 'VOL-05', name: 'Nikhil S', skills: ['logistics', 'teaching'], lat: 12.9260, lng: 77.5900, availability: ['evening', 'afternoon'], status: 'available' },
+      { id: 'VOL-06', name: 'Meera K', skills: ['medical', 'teaching'], lat: 13.0400, lng: 77.6000, availability: ['morning', 'evening'], status: 'available' },
+      { id: 'VOL-07', name: 'Aditya V', skills: ['rescue'], lat: 13.1020, lng: 77.6020, availability: ['morning', 'afternoon'], status: 'available' },
+      { id: 'VOL-08', name: 'Pooja L', skills: ['logistics'], lat: 12.9950, lng: 77.5600, availability: ['afternoon'], status: 'available' },
+      { id: 'VOL-09', name: 'Ishaan T', skills: ['medical', 'rescue'], lat: 13.0150, lng: 77.6200, availability: ['morning'], status: 'available' },
+      { id: 'VOL-10', name: 'Kavya D', skills: ['teaching', 'logistics'], lat: 12.8450, lng: 77.6760, availability: ['morning', 'afternoon'], status: 'available' }
+    ];
+
+    let requests = structuredClone(baseRequests);
+    let volunteers = structuredClone(baseVolunteers);
+    let assignmentsCount = 11;
+    let map, heatLayer, markerLayer;
+
+    const requestListEl = document.getElementById('requestList');
+    const matchListEl = document.getElementById('matchList');
+    const selectedRequestLabel = document.getElementById('selectedRequestLabel');
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const toRad = deg => deg * Math.PI / 180;
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    function calculateMatches(request) {
+      return volunteers
+        .filter(v => v.status === 'available')
+        .map(v => {
+          const matchedSkills = request.requiredSkills.filter(skill => v.skills.includes(skill)).length;
+          const skillScore = matchedSkills / request.requiredSkills.length;
+          const availabilityScore = v.availability.includes(request.timeSlot) ? 1 : 0;
+          const distanceKm = haversine(request.lat, request.lng, v.lat, v.lng);
+          const distanceScore = Math.max(0, 1 - distanceKm / 25);
+          const urgencyBonus = request.urgency / 5;
+          const totalScore = 0.45 * skillScore + 0.25 * availabilityScore + 0.20 * distanceScore + 0.10 * urgencyBonus;
+          return { ...v, distanceKm, skillScore, availabilityScore, distanceScore, urgencyBonus, totalScore };
+        })
+        .filter(v => v.skillScore > 0)
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .slice(0, 5);
+    }
+
+    function getHeatWeight(request) {
+      const statusFactor = request.status === 'open' ? 1 : 0.4;
+      return (request.urgency / 5) * Math.min(1, request.peopleNeeded / 10) * statusFactor;
+    }
+
+    function getFilteredRequests() {
+      return requests.filter(req => {
+        const skillOk = appState.skillFilter === 'all' || req.requiredSkills.includes(appState.skillFilter);
+        const urgencyOk = appState.urgencyFilter === 'all' || String(req.urgency) === appState.urgencyFilter;
+        const searchText = `${req.title} ${req.area} ${req.requiredSkills.join(' ')}`.toLowerCase();
+        const searchOk = !appState.search || searchText.includes(appState.search);
+        return skillOk && urgencyOk && searchOk;
+      });
+    }
+
+    function urgencyLabel(level) {
+      if (level >= 5) return 'Critical';
+      if (level >= 4) return 'High';
+      if (level >= 3) return 'Medium';
+      return 'Low';
+    }
+
+    function updateAIInsights() {
+      const criticalReqs = requests.filter(r => r.urgency >= 4 && r.status === 'open');
+      const availableVols = volunteers.filter(v => v.status === 'available').length;
+      let text = "System is running optimally. All requests are manageable.";
+
+      if (criticalReqs.length > 0) {
+        const topCritical = criticalReqs.sort((a, b) => b.urgency - a.urgency)[0];
+        text = `High urgency detected in <strong>${topCritical.area}</strong> for ${topCritical.title.toLowerCase()}. `;
+        if (availableVols < 5) {
+          text += "Possible delay in response due to low overall volunteer availability.";
+        } else {
+          text += "Recommended volunteers ready based on skill match.";
+        }
+      } else if (availableVols > 15) {
+        text = "High volunteer availability. Ready for any incoming alerts.";
+      }
+
+      const insightEl = document.getElementById('aiInsightsText');
+      if (insightEl) insightEl.innerHTML = text;
+    }
+
+    function updateKPIs() {
+      document.getElementById('kpiRequests').textContent = String(requests.filter(r => r.status === 'open').length).padStart(2, '0');
+      document.getElementById('kpiVolunteers').textContent = String(volunteers.filter(v => v.status === 'available').length).padStart(2, '0');
+      document.getElementById('kpiCritical').textContent = String(requests.filter(r => r.urgency >= 4 && r.status === 'open').length).padStart(2, '0');
+      document.getElementById('kpiAssigned').textContent = String(assignmentsCount).padStart(2, '0');
+      updateAIInsights();
+    }
+
+    function renderRequests() {
+      const filtered = getFilteredRequests();
+      requestListEl.innerHTML = filtered.map(req => `
+        <article class="request-item ${appState.selectedRequestId === req.id ? 'active' : ''}" data-request-id="${req.id}" tabindex="0" role="button" aria-label="Open ${req.title}">
+          <div class="request-top">
+            <div>
+              <h4 class="request-title">${req.title}</h4>
+              <div class="muted tiny">${req.id} • ${req.area}</div>
+            </div>
+            <span class="chip ${req.urgency >= 5 ? 'high' : req.urgency >= 3 ? 'medium' : 'low'}">${urgencyLabel(req.urgency)}</span>
+          </div>
+          <p class="muted tiny">${req.description}</p>
+          <div class="pill-row">${req.requiredSkills.map(skill => `<span class="pill">${skill}</span>`).join('')}</div>
+          <div class="request-actions muted tiny">Need ${req.peopleNeeded} volunteers • ${req.timeSlot}</div>
+        </article>
+      `).join('');
+
+      requestListEl.querySelectorAll('.request-item').forEach(el => {
+        const open = () => selectRequest(el.dataset.requestId);
+        el.addEventListener('click', open);
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      });
+    }
+
+    function renderMatches(requestId) {
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        matchListEl.innerHTML = '<div class="match-item"><p class="muted">Choose a relief request to compute volunteer scores.</p></div>';
+        selectedRequestLabel.textContent = 'Select a request to view matches.';
+        return;
+      }
+      selectedRequestLabel.textContent = `${request.title} • ${request.area} • ${urgencyLabel(request.urgency)} urgency`;
+      const matches = calculateMatches(request);
+      matchListEl.innerHTML = matches.map((m, index) => {
+        const isTopMatch = index === 0;
+        const badge = isTopMatch ? `<span class="ai-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg> Top Match</span>` : '';
+
+        let aiExplanation = '';
+        if (isTopMatch) {
+          let reason = [];
+          if (m.skillScore === 1) reason.push("100% skill match");
+          else if (m.skillScore >= 0.5) reason.push("optimal skill match");
+
+          if (m.distanceKm < 5) reason.push(`close proximity (${m.distanceKm.toFixed(1)}km)`);
+
+          if (m.availabilityScore === 1) reason.push("matching time availability");
+
+          aiExplanation = `
+          <div class="ai-explanation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <div><strong>Why this volunteer is selected:</strong> Highest combined score (${(m.totalScore * 100).toFixed(0)}%) driven by ${reason.length > 0 ? reason.join(', ') : 'overall profile strength'} for this assignment.</div>
+          </div>`;
+        }
+
+        return `
+        <article class="match-item" style="animation-delay: ${index * 0.05}s">
+          <div class="match-top">
+            <div>
+              <h4 class="match-name">#${index + 1} ${m.name} ${badge}</h4>
+              <div class="muted tiny">${m.id} • ${m.distanceKm.toFixed(1)} km away • ${m.availability.join(', ')}</div>
+            </div>
+            <button class="assign-btn" data-assign-id="${m.id}">Assign</button>
+          </div>
+          <div class="pill-row">${m.skills.map(skill => `<span class="pill">${skill}</span>`).join('')}</div>
+          <div class="match-metrics tiny muted">
+            <span>Skill ${(m.skillScore * 100).toFixed(0)}%</span>
+            <span>Availability ${(m.availabilityScore * 100).toFixed(0)}%</span>
+            <span>Distance ${(m.distanceScore * 100).toFixed(0)}%</span>
+            <span>Total ${(m.totalScore * 100).toFixed(0)}%</span>
+          </div>
+          <div class="score-bar"><div class="score-fill" style="width:${Math.max(8, m.totalScore * 100)}%"></div></div>
+          ${aiExplanation}
+        </article>
+      `}).join('');
+
+      matchListEl.querySelectorAll('[data-assign-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          assignmentsCount += 1;
+          updateKPIs();
+          btn.textContent = 'Assigned';
+          btn.disabled = true;
+        });
+      });
+    }
+
+    function initMap() {
+      map = L.map('map', { zoomControl: true }).setView([12.9716, 77.5946], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      markerLayer = L.layerGroup().addTo(map);
+      updateMapLayers();
+    }
+
+    function updateMapLayers() {
+      const filtered = getFilteredRequests();
+      if (heatLayer) map.removeLayer(heatLayer);
+      markerLayer.clearLayers();
+      const heatPoints = filtered.map(req => [req.lat, req.lng, Math.max(0.25, getHeatWeight(req))]);
+      heatLayer = L.heatLayer(heatPoints, {
+        radius: 30,
+        blur: 28,
+        maxZoom: 17,
+        gradient: { 0.2: '#76aad4', 0.45: '#f0a74d', 0.75: '#e17281', 1.0: '#a13544' }
+      }).addTo(map);
+
+      if (appState.showMarkers) {
+        filtered.forEach(req => {
+          const marker = L.circleMarker([req.lat, req.lng], {
+            radius: 7,
+            fillColor: req.urgency >= 5 ? '#e17281' : req.urgency >= 4 ? '#f0a74d' : '#76aad4',
+            color: '#ffffff', weight: 1.2, fillOpacity: 0.95
+          });
+          marker.bindPopup(`<strong>${req.title}</strong><br>${req.area}<br>Urgency: ${urgencyLabel(req.urgency)}<br>Need: ${req.peopleNeeded} volunteers`);
+          marker.addTo(markerLayer);
+        });
+      }
+    }
+
+    function selectRequest(requestId) {
+      appState.selectedRequestId = requestId;
+      const request = requests.find(r => r.id === requestId);
+      if (request) {
+        map.flyTo([request.lat, request.lng], 13, { duration: 0.8 });
+      }
+      renderRequests();
+      renderMatches(requestId);
+    }
+
+    function resetAll() {
+      requests = structuredClone(baseRequests);
+      volunteers = structuredClone(baseVolunteers);
+      assignmentsCount = 11;
+      appState.selectedRequestId = null;
+      appState.skillFilter = 'all';
+      appState.urgencyFilter = 'all';
+      appState.search = '';
+      document.getElementById('skillFilter').value = 'all';
+      document.getElementById('urgencyFilter').value = 'all';
+      document.getElementById('globalSearch').value = '';
+      updateKPIs();
+      renderRequests();
+      renderMatches(null);
+      updateMapLayers();
+      map.flyTo([12.9716, 77.5946], 11, { duration: 0.8 });
+    }
+
+    function simulateNewAlert() {
+      const newRequest = {
+        id: 'REQ-109',
+        title: 'Rapid medicine dispatch',
+        area: 'Indiranagar',
+        lat: 12.9784,
+        lng: 77.6408,
+        requiredSkills: ['medical', 'logistics'],
+        urgency: 5,
+        peopleNeeded: 7,
+        timeSlot: 'evening',
+        status: 'open',
+        description: 'Urgent medicine and triage queue support.'
+      };
+      const exists = requests.some(r => r.id === newRequest.id);
+      if (!exists) requests.unshift(newRequest);
+      updateKPIs();
+      renderRequests();
+      updateMapLayers();
+      selectRequest('REQ-109');
+    }
+
+    document.querySelector('[data-theme-toggle]').addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+    });
+
+    document.getElementById('toggleMarkersBtn').addEventListener('click', () => {
+      appState.showMarkers = !appState.showMarkers;
+      updateMapLayers();
+    });
+
+    document.getElementById('skillFilter').addEventListener('change', e => {
+      appState.skillFilter = e.target.value;
+      renderRequests();
+      updateMapLayers();
+    });
+
+    document.getElementById('urgencyFilter').addEventListener('change', e => {
+      appState.urgencyFilter = e.target.value;
+      renderRequests();
+      updateMapLayers();
+    });
+
+    document.getElementById('globalSearch').addEventListener('input', e => {
+      appState.search = e.target.value.trim().toLowerCase();
+      renderRequests();
+      updateMapLayers();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+    document.getElementById('simulateBtn').addEventListener('click', simulateNewAlert);
+    document.getElementById('focusCriticalBtn').addEventListener('click', () => {
+      const critical = requests.filter(r => r.urgency >= 5).sort((a, b) => b.peopleNeeded - a.peopleNeeded)[0];
+      if (critical) selectRequest(critical.id);
+    });
+
+    updateKPIs();
+    renderRequests();
+    renderMatches(null);
+    initMap();
+    selectRequest('REQ-101');
+  </script>
+</body>
+</html>
