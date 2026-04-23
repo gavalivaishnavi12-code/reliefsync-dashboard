@@ -870,6 +870,411 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Chatbot Styles */
+    .chatbot-container {
+      position: fixed;
+      bottom: var(--space-5);
+      right: var(--space-5);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+
+    .chatbot-btn {
+      pointer-events: auto;
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+      color: white;
+      border: none;
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+      position: relative;
+      font-weight: 800;
+      font-size: var(--text-xl);
+      font-family: var(--font-display);
+    }
+
+    .chatbot-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    .chatbot-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--color-error);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      width: 20px;
+      height: 20px;
+      border-radius: var(--radius-full);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid var(--color-surface);
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .chatbot-badge.active {
+      opacity: 1;
+      transform: scale(1);
+      animation: pulseBadge 2s infinite;
+    }
+
+    .chatbot-window {
+      pointer-events: auto;
+      position: absolute;
+      bottom: 76px;
+      right: 0;
+      width: 380px;
+      max-width: calc(100vw - var(--space-10));
+      height: 580px;
+      max-height: calc(100vh - 120px);
+      background: color-mix(in oklab, var(--color-surface) 85%, transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3), 0 0 0 1px color-mix(in oklab, var(--color-primary) 10%, transparent);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform-origin: bottom right;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .chatbot-window.open {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+    }
+
+    .chatbot-window.minimized {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8) translateY(20px);
+    }
+
+    .chatbot-header {
+      padding: var(--space-4);
+      background: linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 15%, transparent), color-mix(in oklab, #8b5cf6 15%, transparent));
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .chatbot-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbot-header-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-weight: 800;
+      font-size: var(--text-lg);
+      font-family: var(--font-display);
+    }
+
+    .chatbot-header-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--color-primary);
+    }
+
+    .chatbot-header-subtitle {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.4;
+    }
+
+    .chatbot-header-actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .chatbot-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .chatbot-action-btn:hover {
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: var(--space-4);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .chatbot-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chatbot-messages::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: var(--radius-full);
+    }
+
+    .chat-msg {
+      max-width: 85%;
+      padding: 0.6rem 0.9rem;
+      border-radius: var(--radius-lg);
+      font-size: var(--text-sm);
+      line-height: 1.4;
+      animation: messageIn 0.3s ease-out forwards;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .chat-msg.bot {
+      align-self: flex-start;
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.user {
+      align-self: flex-end;
+      background: var(--color-primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+      animation: messageIn 0.4s ease-out forwards;
+      opacity: 0;
+    }
+
+    .chat-quick-btn {
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chat-quick-btn:hover {
+      background: color-mix(in oklab, var(--color-primary) 15%, var(--color-surface));
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .chat-voice-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--color-surface-offset);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .voice-btn {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .voice-btn:hover {
+      background: var(--color-surface-2);
+      color: var(--color-text);
+    }
+
+    .voice-btn.active {
+      background: color-mix(in oklab, var(--color-error) 20%, transparent);
+      color: var(--color-error);
+      border-color: var(--color-error);
+      animation: pulseBadge 1.5s infinite;
+    }
+
+    .voice-btn.toggle-on {
+      background: color-mix(in oklab, var(--color-primary) 20%, transparent);
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    .voice-status {
+      flex: 1;
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      text-align: right;
+    }
+
+    .chat-input-area {
+      padding: var(--space-4);
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .chat-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .chat-input-wrapper svg {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: var(--color-text-faint);
+      pointer-events: none;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: 0.75rem 1rem 0.75rem 2.2rem;
+      color: var(--color-text);
+      font-size: var(--text-sm);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 20%, transparent);
+    }
+
+    .chat-send-btn-large {
+      width: 100%;
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 0.75rem;
+      font-weight: 700;
+      font-size: var(--text-sm);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-2);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .chat-send-btn-large:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .chat-send-btn-large:disabled {
+      background: var(--color-surface-offset);
+      color: var(--color-text-faint);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 0.8rem 1rem;
+      align-self: flex-start;
+      background: var(--color-surface-offset);
+      border-radius: var(--radius-lg);
+      border-bottom-left-radius: 4px;
+      animation: messageIn 0.3s ease-out forwards;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--color-text-muted);
+      border-radius: 50%;
+      animation: typingDot 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes pulseBadge {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
+    @keyframes messageIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes typingDot {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+    }
   </style>
 </head>
 
@@ -1026,6 +1431,80 @@
         </section>
       </section>
     </main>
+  </div>
+
+  <!-- AI Chatbot UI -->
+  <div class="chatbot-container">
+    <div class="chatbot-window" id="chatbotWindow">
+      <div class="chatbot-header">
+        <div class="chatbot-header-top">
+          <div class="chatbot-header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4zM16 10H8a4 4 0 0 0-4 4v2a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-2a4 4 0 0 0-4-4zM9 14h.01M15 14h.01" />
+            </svg>
+            ReliefSync Assistant
+          </div>
+          <div class="chatbot-header-actions">
+            <button class="chatbot-action-btn" id="chatMinimizeBtn" aria-label="Minimize Chat" title="Minimize">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <button class="chatbot-action-btn" id="chatCloseBtn" aria-label="Close Chat" title="Close">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="chatbot-header-subtitle">Ask about requests, volunteers, filters, scoring, and dashboard actions.
+        </div>
+      </div>
+
+      <div class="chat-voice-bar">
+        <button class="voice-btn" id="voiceMicBtn" title="Start voice input">🎤</button>
+        <button class="voice-btn toggle-on" id="voiceReplyBtn" title="Toggle voice replies">🔊</button>
+        <button class="voice-btn" id="voiceStopBtn" title="Stop voice input/reply">⏹</button>
+        <div class="voice-status" id="voiceStatus">Voice ready if supported.</div>
+      </div>
+
+      <div class="chatbot-messages" id="chatMessages">
+        <div class="chat-msg bot">Hello! I can guide you through this dashboard by text and voice.</div>
+        <div class="chat-quick-actions" id="chatQuickActions">
+          <button class="chat-quick-btn" data-action="critical">Critical requests</button>
+          <button class="chat-quick-btn" data-action="volunteer">Best volunteer</button>
+          <button class="chat-quick-btn" data-action="scoring">Scoring</button>
+          <button class="chat-quick-btn" data-action="reset">Reset</button>
+        </div>
+      </div>
+
+      <form class="chat-input-area" id="chatForm">
+        <div class="chat-input-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+          </svg>
+          <input type="text" class="chat-input" id="chatInput" placeholder="Ask something about this website..."
+            autocomplete="off">
+        </div>
+        <button type="submit" class="chat-send-btn-large" id="chatSendBtn" disabled>
+          Send Message
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <button class="chatbot-btn" id="chatToggleBtn" aria-label="Toggle AI Chat">
+      AI
+      <div class="chatbot-badge" id="chatBadge">0</div>
+    </button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -1361,6 +1840,305 @@
     renderMatches(null);
     initMap();
     selectRequest('REQ-101');
+
+
+
+    /* Chatbot Logic */
+    const chatState = {
+      isOpen: false,
+      unreadCount: 0,
+      inactivityTimer: null,
+      isTyping: false,
+      voiceReply: true
+    };
+
+    const chatElements = {
+      window: document.getElementById('chatbotWindow'),
+      toggleBtn: document.getElementById('chatToggleBtn'),
+      minimizeBtn: document.getElementById('chatMinimizeBtn'),
+      closeBtn: document.getElementById('chatCloseBtn'),
+      messages: document.getElementById('chatMessages'),
+      form: document.getElementById('chatForm'),
+      input: document.getElementById('chatInput'),
+      sendBtn: document.getElementById('chatSendBtn'),
+      badge: document.getElementById('chatBadge'),
+      quickActions: document.getElementById('chatQuickActions'),
+      voiceMicBtn: document.getElementById('voiceMicBtn'),
+      voiceReplyBtn: document.getElementById('voiceReplyBtn'),
+      voiceStopBtn: document.getElementById('voiceStopBtn'),
+      voiceStatus: document.getElementById('voiceStatus')
+    };
+
+    // Web Speech API Setup
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        chatElements.voiceMicBtn.classList.add('active');
+        chatElements.voiceStatus.textContent = "Listening...";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        chatElements.input.value = transcript;
+        chatElements.sendBtn.disabled = false;
+        handleUserSubmit(new Event('submit'));
+      };
+
+      recognition.onerror = (event) => {
+        chatElements.voiceStatus.textContent = "Mic error: " + event.error;
+        stopListening();
+      };
+
+      recognition.onend = () => {
+        stopListening();
+      };
+    } else {
+      chatElements.voiceStatus.textContent = "Voice input unsupported.";
+      chatElements.voiceMicBtn.disabled = true;
+    }
+
+    function startListening() {
+      if (recognition && !isListening) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function stopListening() {
+      if (recognition && isListening) {
+        recognition.stop();
+        isListening = false;
+        chatElements.voiceMicBtn.classList.remove('active');
+        chatElements.voiceStatus.textContent = "Voice ready if supported.";
+      }
+    }
+
+    function speakText(text) {
+      if (!chatState.voiceReply || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+      chatElements.voiceStatus.textContent = "Speaking...";
+      utterance.onend = () => {
+        chatElements.voiceStatus.textContent = "Voice ready if supported.";
+      };
+    }
+
+    function stopSpeaking() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        chatElements.voiceStatus.textContent = "Voice ready if supported.";
+      }
+      stopListening();
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playNotificationSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // A6
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function resetInactivityTimer() {
+      if (chatState.inactivityTimer) clearTimeout(chatState.inactivityTimer);
+      if (chatState.isOpen) {
+        chatState.inactivityTimer = setTimeout(() => {
+          if (chatState.isOpen) setChatState('minimized');
+        }, 30000); // 30 seconds
+      }
+    }
+
+    function setChatState(state) {
+      if (state === 'open') {
+        chatElements.window.classList.add('open');
+        chatElements.window.classList.remove('minimized');
+        chatState.isOpen = true;
+        chatState.unreadCount = 0;
+        updateBadge();
+        chatElements.input.focus();
+        resetInactivityTimer();
+      } else if (state === 'minimized') {
+        chatElements.window.classList.remove('open');
+        chatElements.window.classList.add('minimized');
+        chatState.isOpen = false;
+        if (chatState.inactivityTimer) clearTimeout(chatState.inactivityTimer);
+      } else if (state === 'closed') {
+        chatElements.window.classList.remove('open', 'minimized');
+        chatState.isOpen = false;
+        if (chatState.inactivityTimer) clearTimeout(chatState.inactivityTimer);
+        // Clear history on close but keep quick actions
+        chatElements.messages.innerHTML = `
+          <div class="chat-msg bot">Hello! I can guide you through this dashboard by text and voice.</div>
+        `;
+        chatElements.messages.appendChild(chatElements.quickActions);
+      }
+    }
+
+    function updateBadge() {
+      if (chatState.unreadCount > 0) {
+        chatElements.badge.textContent = chatState.unreadCount;
+        chatElements.badge.classList.add('active');
+      } else {
+        chatElements.badge.classList.remove('active');
+      }
+    }
+
+    function scrollToBottom() {
+      chatElements.messages.scrollTop = chatElements.messages.scrollHeight;
+    }
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `chat-msg ${sender}`;
+      msgDiv.textContent = text;
+      chatElements.messages.appendChild(msgDiv);
+      scrollToBottom();
+
+      if (sender === 'bot') {
+        speakText(text);
+        if (!chatState.isOpen) {
+          chatState.unreadCount++;
+          updateBadge();
+          playNotificationSound();
+        }
+      }
+    }
+
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'typing-indicator';
+      typingDiv.id = 'typingIndicator';
+      typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+      chatElements.messages.appendChild(typingDiv);
+      scrollToBottom();
+    }
+
+    function hideTypingIndicator() {
+      const el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+    }
+
+    function handleQuickAction(action) {
+      addMessage("Tell me about " + action.replace('-', ' '), 'user');
+      showTypingIndicator();
+      resetInactivityTimer();
+
+      setTimeout(() => {
+        hideTypingIndicator();
+        let reply = "";
+        if (action === 'critical') {
+          reply = "I've focused the map on the most critical request.";
+          document.getElementById('focusCriticalBtn').click();
+        } else if (action === 'volunteer') {
+          reply = "The best volunteers are ranked in the right panel when you select a request. They are scored by skill, availability, and distance.";
+        } else if (action === 'scoring') {
+          reply = "Scoring is: 45% skills, 25% availability, 20% distance, and 10% urgency bonus.";
+        } else if (action === 'reset') {
+          reply = "I've reset all filters and selections.";
+          document.getElementById('resetBtn').click();
+        }
+        addMessage(reply, 'bot');
+      }, 1000);
+    }
+
+    async function handleUserSubmit(e) {
+      if (e) e.preventDefault();
+      const text = chatElements.input.value.trim();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      chatElements.input.value = '';
+      chatElements.sendBtn.disabled = true;
+      resetInactivityTimer();
+
+      showTypingIndicator();
+
+      // Mock AI response
+      setTimeout(() => {
+        hideTypingIndicator();
+        const tLower = text.toLowerCase();
+        let reply = "I can help you find volunteers with specific skills or explain the dashboard.";
+
+        if (tLower.includes('critical')) {
+          reply = "Let me focus on the critical area for you.";
+          document.getElementById('focusCriticalBtn').click();
+        } else if (tLower.includes('reset')) {
+          reply = "Resetting the dashboard to default state.";
+          document.getElementById('resetBtn').click();
+        } else if (tLower.includes('score') || tLower.includes('scoring')) {
+          reply = "The volunteer matching score combines skills (45%), availability (25%), distance (20%), and urgency (10%).";
+        }
+        addMessage(reply, 'bot');
+      }, 1500 + Math.random() * 1000);
+    }
+
+    // Event Listeners
+    chatElements.toggleBtn.addEventListener('click', () => {
+      if (chatState.isOpen) setChatState('minimized');
+      else setChatState('open');
+    });
+
+    chatElements.minimizeBtn.addEventListener('click', () => setChatState('minimized'));
+    chatElements.closeBtn.addEventListener('click', () => setChatState('closed'));
+
+    chatElements.input.addEventListener('input', () => {
+      chatElements.sendBtn.disabled = chatElements.input.value.trim() === '';
+      resetInactivityTimer();
+    });
+
+    chatElements.form.addEventListener('submit', handleUserSubmit);
+
+    // Voice events
+    chatElements.voiceMicBtn.addEventListener('click', () => {
+      if (isListening) stopListening();
+      else startListening();
+    });
+
+    chatElements.voiceReplyBtn.addEventListener('click', () => {
+      chatState.voiceReply = !chatState.voiceReply;
+      chatElements.voiceReplyBtn.classList.toggle('toggle-on', chatState.voiceReply);
+      chatElements.voiceStatus.textContent = chatState.voiceReply ? "Voice reply enabled." : "Voice reply disabled.";
+      if (!chatState.voiceReply) stopSpeaking();
+    });
+
+    chatElements.voiceStopBtn.addEventListener('click', () => {
+      stopSpeaking();
+    });
+
+    // Quick Actions
+    document.querySelectorAll('.chat-quick-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        handleQuickAction(e.target.dataset.action);
+      });
+    });
+
+    // Initial setup
+    updateBadge();
+
   </script>
 </body>
+
 </html>
