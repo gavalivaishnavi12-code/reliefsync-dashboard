@@ -50,11 +50,18 @@ This ensures optimal and unbiased decision-making.
 - ⚡ One-click assignment system
 - 🔄 Simulated emergency alerts
 
+🧠 AI Chatbot & Voice Assistant
+- Chatbot to answer user queries about system features and workflow
+- Voice-enabled interaction using speech recognition and speech synthesis
+-Helps users navigate the platform hands-free
+
 🛠️ Tech Stack
 
 - Frontend: HTML, CSS, JavaScript
 - Map Visualization: Leaflet.js
 - Logic: Frontend-based scoring system
+- Voice Features: Browser Speech Recognition & Speech Synthesis
+- Assistant: Rule-based chatbot interface
 
 🚀 Live Demo
 👉https://gavalivaishnavi12-code.github.io/reliefsync-dashboard/
