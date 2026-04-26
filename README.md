@@ -18,7 +18,7 @@ This leads to delayed responses, poor coordination, and unmet urgent needs.
 ReliefSync provides a centralized dashboard that:
 - Visualizes urgency using a Crisis Heatmap
 - Matches volunteers using a weighted scoring system
-- Provides AI-like insights and recommendations
+- Provides AI-like insights and recommendations (Gemini AI)
 - Enables quick and transparent decision-making
 
 ⚙️ How It Works
@@ -49,19 +49,46 @@ This ensures optimal and unbiased decision-making.
 - 🔍 Transparent “Why selected” explanation
 - ⚡ One-click assignment system
 - 🔄 Simulated emergency alerts
+ - Dual-mode chatbot:
+  - ⚡Basic Mode – Fast, rule-based responses
+  - 🧠Gemini Mode – AI-powered contextual answers
+- Understands natural language queries about:
+  - Relief requests
+  - Volunteer matching
+  - Dashboard insights
+- Provides smart explanations and recommendations
+- Supports both text and voice interaction
 
 🧠 AI Chatbot & Voice Assistant
+
 - Chatbot to answer user queries about system features and workflow
 - Voice-enabled interaction using speech recognition and speech synthesis
 -Helps users navigate the platform hands-free
+
+🤖 Gemini AI Integration
+
+ReliefSync includes Google Gemini AI to provide intelligent, real-time assistance within the dashboard.
+
+🔹 Example Queries
+
+- Show critical requests
+- Who is the best volunteer for this case?
+- Explain why this volunteer is selected
+
+🔹 Reliability
+
+If Gemini API is unavailable, the system automatically falls back to Basic Mode to ensure uninterrupted functionality.
+
+⚠️ Note: API key has been removed for security. Add your own Google Gemini API key to enable AI features.
 
 🛠️ Tech Stack
 
 - Frontend: HTML, CSS, JavaScript
 - Map Visualization: Leaflet.js
+- AI Integration: Google Gemini API
 - Logic: Frontend-based scoring system
 - Voice Features: Browser Speech Recognition & Speech Synthesis
-- Assistant: Rule-based chatbot interface
+- Assistant: Dual-mode chatbot (Rule-based + Gemini AI)
 
 🚀 Live Demo
 👉https://gavalivaishnavi12-code.github.io/reliefsync-dashboard/
@@ -71,18 +98,10 @@ This ensures optimal and unbiased decision-making.
 
 🔮 Future Scope
 - Integration with real-time disaster data APIs
-- AI-based predictive analytics
+- Advanced AI analytics using Google Gemini / Vertex AI
 - Mobile app for volunteers
 - Government & NGO system integration
 - Multi-city scalability
-
-🤖 AI Integration (Future Integration)
-
-ReliefSync simulates AI-driven decision-making using rule-based logic.
-It can be extended with:
-- Google Gemini API
-- Vertex AI for predictive insights
-- Real-time intelligent recommendations
 
 🙌 Team :
 VibeCodersX
