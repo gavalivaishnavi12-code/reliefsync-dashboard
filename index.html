@@ -82,7 +82,7 @@
     }
 
     [data-theme="dark"] {
-      /* Dark Theme Colors - Premium & Deep */
+      /* Dark Theme Colors */
       --color-bg: #0b1f1a;
       --color-bg-gradient: linear-gradient(135deg, #0b1f1a 0%, #132f2b 100%);
       --color-surface: #132f2b;
@@ -111,7 +111,7 @@
       --color-error: #f87171;
       --color-info: #60a5fa;
       
-      /* Shadows - Deeper for dark mode */
+      /* Shadows */
       --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
       --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
       --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.6);
@@ -863,7 +863,6 @@
       }
     }
 
-    /* NEW: Bottom grid and insights styling appended */
     .bottom-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -978,6 +977,50 @@
       animation: pulseBadge 2s infinite;
     }
 
+    /* Gemini Mode Toggle Styles */
+    .chatbot-header-actions .mode-toggle {
+      display: flex;
+      align-items: center;
+      width: auto;
+      height: auto;
+      gap: 3px;
+      padding: 3px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      border: 1px solid var(--color-border);
+      margin-right: 4px;
+    }
+
+    .chatbot-header-actions .mode-toggle .mode-basic,
+    .chatbot-header-actions .mode-toggle .mode-gemini {
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      transition: all var(--transition);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .chatbot-header-actions .mode-toggle .mode-basic {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+    }
+
+    .chatbot-header-actions .mode-toggle .mode-gemini {
+      background: transparent;
+      color: var(--color-text-muted);
+    }
+
+    .chatbot-header-actions .mode-toggle.gemini-active .mode-basic {
+      background: transparent;
+      color: var(--color-text-muted);
+    }
+
+    .chatbot-header-actions .mode-toggle.gemini-active .mode-gemini {
+      background: linear-gradient(135deg, #4285f4, #9b5de5);
+      color: white;
+    }
+
     .chatbot-window {
       pointer-events: auto;
       position: absolute;
@@ -1054,6 +1097,7 @@
 
     .chatbot-header-actions {
       display: flex;
+      align-items: center;
       gap: var(--space-2);
     }
 
@@ -1492,6 +1536,10 @@
             ReliefSync Assistant
           </div>
           <div class="chatbot-header-actions">
+            <button class="chatbot-action-btn mode-toggle" id="geminiModeBtn" aria-label="Toggle Gemini Mode" title="Switch between Basic and Gemini AI">
+              <span class="mode-basic">Basic</span>
+              <span class="mode-gemini">Gemini</span>
+            </button>
             <button class="chatbot-action-btn" id="chatMinimizeBtn" aria-label="Minimize Chat" title="Minimize">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1898,6 +1946,9 @@
       voiceReply: true
     };
 
+    // Gemini Mode State
+    let isGeminiMode = false;
+
     const chatElements = {
       window: document.getElementById('chatbotWindow'),
       toggleBtn: document.getElementById('chatToggleBtn'),
@@ -1914,6 +1965,38 @@
       voiceStopBtn: document.getElementById('voiceStopBtn'),
       voiceStatus: document.getElementById('voiceStatus')
     };
+
+    // Gemini API Function
+    async function callGeminiAPI(message) {
+      const API_KEY = 'Gemini API_KEY';
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${'Gemini API_KEY'}`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: message
+              }]
+            }]
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+      } catch (error) {
+        console.error('Gemini API error:', error);
+        return null;
+      }
+    }
 
     // Web Speech API Setup
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2122,7 +2205,26 @@
 
       showTypingIndicator();
 
-      // Mock AI response
+      // Gemini Mode
+      if (isGeminiMode) {
+        const geminiResponse = await callGeminiAPI(text);
+        hideTypingIndicator();
+        
+        if (geminiResponse) {
+          addMessage(geminiResponse, 'bot');
+        } else {
+          // Fallback to existing logic if Gemini fails
+          addMessage("Gemini unavailable. Switching to basic mode.", 'bot');
+          processBasicModeResponse(text);
+        }
+      } else {
+        // Basic Mode - Use existing chatbot logic
+        processBasicModeResponse(text);
+      }
+    }
+
+    function processBasicModeResponse(text) {
+      // Mock AI response (basic logic)
       setTimeout(() => {
         hideTypingIndicator();
         const tLower = text.toLowerCase();
@@ -2181,7 +2283,17 @@
       });
     });
 
-    // Initial setup
+    // Gemini Mode Toggle
+    const geminiModeBtn = document.getElementById('geminiModeBtn');
+    if (geminiModeBtn) {
+      geminiModeBtn.addEventListener('click', () => {
+        isGeminiMode = !isGeminiMode;
+        geminiModeBtn.classList.toggle('gemini-active', isGeminiMode);
+        const statusMsg = isGeminiMode ? "Gemini AI mode enabled." : "Basic mode enabled.";
+        chatElements.voiceStatus.textContent = statusMsg;
+      });
+    }
+
     updateBadge();
 
   </script>
