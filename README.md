@@ -94,7 +94,7 @@ If Gemini API is unavailable, the system automatically falls back to Basic Mode 
 👉https://gavalivaishnavi12-code.github.io/reliefsync-dashboard/
 
 🎥 Demo Video
-👉
+👉https://drive.google.com/file/d/10gFmPdzTRZ81IYiyV2YfZ4Br1ngu5aT6/view?usp=drivesdk
 
 🔮 Future Scope
 - Integration with real-time disaster data APIs
